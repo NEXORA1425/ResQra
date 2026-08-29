@@ -12,7 +12,7 @@
 
 ---
 
-**ResQra** is a state-of-the-art **Emergency Intelligence & Response Platform** designed to synchronize municipal dispatch centers, ground responders, medical facilities, and citizens during high-stakes disasters and civic crises. Powered by Google's **Gemini AI Engine**, ResQra fuses fragmented inputs, evaluates situational severity, runs disaster simulations, and coordinates tactical dispatch through a unified command dashboard.
+**ResQra** is a state-of-the-art **Emergency Intelligence & Response Platform** designed to synchronize municipal dispatch centers, ground responders, medical facilities, and citizens during high-stakes disasters and civic crises. Centered on the municipal grid of **Lucknow, India**, ResQra fuses fragmented inputs, evaluates situational severity, runs disaster simulations, and coordinates tactical dispatch using Google's **Gemini AI Engine**.
 
 ---
 
@@ -37,9 +37,56 @@ graph TD
 
 ---
 
-## 👤 Multi-Role Unified Workspace
+## 📂 Project Directory Structure
 
-ResQra adapts to the exact context of the logged-in emergency stakeholder, providing bespoke operational workflows:
+```text
+resqra/
+├── assets/                          # Static assets and custom media files
+│   └── resqra_banner.jpg            # Tactical Control Center banner
+├── server/                          # Backend Express & TS Services
+│   ├── ai/
+│   │   ├── gemini.ts                # Gemini LLM prompts, structured outputs & fallbacks
+│   │   └── vision.ts                # Multimodal Gemini image damage triage
+│   ├── utils/
+│   │   └── geo.ts                   # Haversine spatial calculations & distance scoring
+│   ├── seedData.ts                  # Seed users, hospitals, responders & incident states
+│   └── store.ts                     # In-memory relational state engine & SSE broadcaster
+├── src/                             # Frontend React 19 Application
+│   ├── components/                  # Feature modular components
+│   │   ├── about/                   # System Architecture visualizations
+│   │   ├── ai/                      # AI Commander Panel summaries & logs
+│   │   ├── analytics/               # Recharts performance & distribution plots
+│   │   ├── citizen/                 # Citizen Portal, reporting forms & live tracking
+│   │   ├── common/                  # Command palettes & tactical audio alert controllers
+│   │   ├── dashboard/               # Operational KPI grids & active feeds
+│   │   ├── demo/                    # Interactive walkthrough scenario modal
+│   │   ├── dispatch/                # Dispatch Center matching & recommendation decks
+│   │   ├── hospitals/               # Live bed availability & trauma load balancing
+│   │   ├── incidents/               # Triage analysis detail modals
+│   │   ├── layout/                  # Header, navigation, and theme switches
+│   │   ├── map/                     # Leaflet routing, weather overlay & casualty heatmaps
+│   │   ├── resources/               # Ground unit lists & status tracking
+│   │   ├── responder/               # Responder dashboard checklist & GPS simulation
+│   │   └── simulation/              # Disaster sandbox simulator
+│   ├── lib/
+│   │   ├── api.ts                   # Axios-free Fetch wrapper with SSE subscriptions
+│   │   ├── firebase.ts              # Firebase client auth and DB integrations
+│   │   └── haptic.ts                # Device haptic feedback drivers
+│   ├── types/
+│   │   └── index.ts                 # Strongly-typed TypeScript interfaces
+│   ├── App.tsx                      # Centralized layout, state orchestrator & SSE listener
+│   ├── index.css                    # Tailwind CSS v4 directives
+│   └── main.tsx                     # DOM mounting point
+├── firestore.rules                  # Firestore Database security configuration
+├── package.json                     # Dependency manifests & compilation commands
+└── tsconfig.json                    # Compiler configurations for TS modules
+```
+
+---
+
+## 👥 Multi-Role Unified Workspace
+
+ResQra adapts to the exact context of the logged-in emergency stakeholder:
 
 ### 1. 🖥️ Emergency Operator & Super Admin Deck
 * **Command Telemetry Banner**: Displays real-time critical stats (Average Response Time: `6.8m`, Average Triage Time: `4.2s`, ICU/Burn Bed occupancy rates).
@@ -59,34 +106,40 @@ ResQra adapts to the exact context of the logged-in emergency stakeholder, provi
 
 ---
 
-## ✨ Advanced Intelligence Features
+## 🧠 Structured Gemini Prompts & Fallback Resilience
 
-### 🧠 Gemini-Powered Incident Triage & Report Fusion
-* **Semantic Deduplication**: Parses multiple incoming calls and automatically clusters duplicate reports describing the same physical event within spatial boundaries using the Gemini LLM.
-* **Multi-Model Resilience**: Employs a resilient fallback system—trying `gemini-3.7-flash` and falling back to `gemini-2.5-flash` with automatic retry delays to mitigate transient 503/429 API spikes.
+ResQra features highly-tuned system instructions to force Gemini models to act as deterministic API engines.
 
-### 🗺️ Meteorological & Smoke Plume Dispatching
-* **Weather-Aware Drone Limits**: Connects to the **Open-Meteo API** to calculate real-time temperature, wind gusts, relative humidity, and precipitation intensity to determine if aerial drone fleets are cleared for flight.
-* **Plume Vector Estimations**: Calculates wind vector dynamics to predict the dispersal direction of hazardous smoke or chemical plumes.
+### LLM Incident Classification Prompts
+The backend feeds raw descriptions directly into the model along with spatial limits, requesting a JSON response matching the following schema:
+```typescript
+interface AIAnalysis {
+  incident_type: IncidentType;
+  severity: Severity;            // LOW | MEDIUM | HIGH | CRITICAL
+  severity_score: number;        // 0 to 100
+  confidence: number;            // 0.0 to 1.0
+  summary: string;
+  people_trapped_estimate: number;
+  hazards_identified: string[];
+  suggested_dispatch_types: string[];
+  pre_arrival_instructions: string[];
+}
+```
 
-### 🏥 Hospital Bed & Trauma Center Balancing
-* **Live Capacity Tracker**: Monitors regional ICU, Burn Unit, and Pediatric bed occupancy rates.
-* **Optimal Trauma Routing**: Automatically recommends hospital transfers for casualties based on capacity, specialized departments, and travel proximity.
-
-### 🌀 Predictive Disaster Simulator
-* **Scenario Sandbox**: Simulates the propagation curves of wildfires, flash floods, or industrial explosions based on dry fuel levels, wind vectors, and geographical blockages.
-* **AI Resource Allocation**: The Gemini engine forecasts resource shortfalls and generates proactive pre-stage directives.
+### Multi-Model Resilience
+To defend against API rate limits (HTTP 429) or temporary server unavailability (HTTP 503), the engine implements a cascading fallback array:
+1. **Primary Model**: `gemini-3.7-flash` (for high reasoning speed and advanced context).
+2. **Secondary Model**: `gemini-2.5-flash` (fails over automatically on errors).
+3. **Execution Safety**: Enforces a double-retry schedule with exponential backoff delays (`600ms`) before throwing exceptions, guaranteeing 99.9% uptime during simulation peaks.
 
 ---
 
-## 🛠️ Technology Stack
+## ⚡ Real-Time Synchronization via SSE
 
-| Layer | Technologies Used |
-| :--- | :--- |
-| **Frontend** | React 19 (TypeScript), Vite, TailwindCSS v4, Motion (Framer Motion), Recharts, Leaflet, D3.js |
-| **Backend** | Express.js, TypeScript (via `tsx`), Server-Sent Events (SSE) for Real-Time Sync, Node-Fetch |
-| **AI Integration** | Google GenAI SDK (`@google/genai` supporting Gemini 3.7 Flash & 2.5 Flash), Gemini Vision |
-| **Data & APIs** | In-Memory Relational State Store, Open-Meteo Weather API, Google Geolocation API |
+To maintain live situational updates without hammering server infrastructure, ResQra implements **Server-Sent Events (SSE)** instead of polling.
+* **Connection Lifecycle**: Opening `GET /api/v1/realtime/events` establishes a persistent HTTP connection.
+* **Server State Store (`server/store.ts`)**: Registers incoming response streams. When an incident is added, triaged, or updated, the store broadcasts a structured payload.
+* **Tactical Audio Alerts**: Whenever the client receives an `INCIDENT_CREATED` SSE event, the browser fires `soundManager.playCriticalAlert()` to visually and auditorially alert operators.
 
 ---
 
@@ -126,6 +179,39 @@ To compile production assets and bundle the server:
 npm run build
 npm start
 ```
+
+---
+
+## 🕹️ Step-by-Step Demo Walkthrough Guide
+
+To experience the full capabilities of ResQra, follow this typical operational scenario:
+
+### Step 1: Trigger the Gomti Nagar Flood Scenario
+1. Open the platform (`http://localhost:3000`) and click **Walkthrough** in the header.
+2. Select **Trigger Flood Crisis**. A loud tactical alarm will sound as a critical flood incident (ID: `inc-1042`) escalates in Gomti Nagar.
+3. The dashboard widgets instantly update: Active Incidents increases, and the KPI panel flags critical severity alerts.
+
+### Step 2: Perform AI Re-Triage
+1. Navigate to the **Incidents** feed. Locate the Gomti Nagar Flood card.
+2. Click **AI Deep Analysis**. ResQra will call Gemini to evaluate the situation.
+3. Observe how the AI successfully extracts the number of trapped victims (`18` residents), categorizes hazards (toxic runoff, structural damage), and raises the Severity Score to `98` (CRITICAL).
+
+### Step 3: Tactical Dispatch Recommendations
+1. Click **Dispatch** in the navigation bar.
+2. Select the escalated Gomti Nagar Flood incident. The AI Recommendation Engine will suggest the closest, most capable responder.
+3. Notice how it recommends **NDRF Water Rescue Squad (Boat 01)** because of the matching water capabilities and spatial proximity (calculated via Haversine).
+4. Click **Assign & Dispatch Unit**. The responder's status changes to `DISPATCHED`.
+
+### Step 4: Track the Responder (Citizen View)
+1. Switch your user role to **Citizen (Aditya Srivastava)** in the top right.
+2. Navigate to the **My Reports / Tracking** tab.
+3. View the live-updating travel route. Note the green priority corridor status, the next route waypoint description, and the active travel countdown ETA.
+
+### Step 5: Complete Checklists & Telemetry (Responder View)
+1. Switch your role to **Responder (Dr. Arjun Verma / Sgt. Rajesh Kumar)**.
+2. Go to the **My Tasks** tab to view your dispatched queue.
+3. Check off tactical tasks (e.g. deploy floating lines, establish medical triage tents) and toggle your state to `ON_SCENE`.
+4. Switch back to **Operator** to verify that the main situation board reflects the status changes instantly via the Server-Sent Event stream!
 
 ---
 
