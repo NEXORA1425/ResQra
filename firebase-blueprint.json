@@ -1,0 +1,121 @@
+{
+  "entities": {
+    "Incident": {
+      "title": "Incident",
+      "description": "Emergency incident reported and tracked by ResQra",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "incident_code": { "type": "string", "maxLength": 64 },
+        "title": { "type": "string", "maxLength": 200 },
+        "description": { "type": "string", "maxLength": 4000 },
+        "type": { "type": "string", "maxLength": 64 },
+        "severity": { "type": "string", "maxLength": 32 },
+        "severity_score": { "type": "number" },
+        "ai_confidence": { "type": "number" },
+        "status": { "type": "string", "maxLength": 64 },
+        "latitude": { "type": "number" },
+        "longitude": { "type": "number" },
+        "location_name": { "type": "string", "maxLength": 255 },
+        "people_affected": { "type": "number" },
+        "people_injured": { "type": "number" },
+        "people_trapped": { "type": "number" },
+        "reported_by": { "type": "string", "maxLength": 128 },
+        "reports_count": { "type": "number" },
+        "created_at": { "type": "string", "maxLength": 64 },
+        "updated_at": { "type": "string", "maxLength": 64 }
+      },
+      "required": ["id", "incident_code", "title", "type", "severity", "status", "latitude", "longitude", "created_at"]
+    },
+    "Resource": {
+      "title": "Resource",
+      "description": "Emergency response fleet asset (Ambulance, Fire Engine, Rescue Unit)",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "callsign": { "type": "string", "maxLength": 64 },
+        "name": { "type": "string", "maxLength": 128 },
+        "type": { "type": "string", "maxLength": 64 },
+        "status": { "type": "string", "maxLength": 64 },
+        "latitude": { "type": "number" },
+        "longitude": { "type": "number" },
+        "location_name": { "type": "string", "maxLength": 255 },
+        "crew_size": { "type": "number" },
+        "fuel_percent": { "type": "number" },
+        "updated_at": { "type": "string", "maxLength": 64 }
+      },
+      "required": ["id", "callsign", "name", "type", "status", "latitude", "longitude"]
+    },
+    "Hospital": {
+      "title": "Hospital",
+      "description": "Healthcare center and emergency trauma facility",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "name": { "type": "string", "maxLength": 200 },
+        "type": { "type": "string", "maxLength": 64 },
+        "latitude": { "type": "number" },
+        "longitude": { "type": "number" },
+        "address": { "type": "string", "maxLength": 255 },
+        "emergency_beds": { "type": "number" },
+        "occupied_emergency_beds": { "type": "number" },
+        "icu_beds": { "type": "number" },
+        "occupied_icu_beds": { "type": "number" },
+        "status": { "type": "string", "maxLength": 64 }
+      },
+      "required": ["id", "name", "type", "latitude", "longitude", "emergency_beds", "occupied_emergency_beds"]
+    },
+    "Dispatch": {
+      "title": "Dispatch",
+      "description": "Resource deployment order to an incident and destination hospital",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "incident_id": { "type": "string", "maxLength": 128 },
+        "resource_id": { "type": "string", "maxLength": 128 },
+        "status": { "type": "string", "maxLength": 64 },
+        "hospital_id": { "type": "string", "maxLength": 128 },
+        "eta_minutes": { "type": "number" },
+        "dispatched_at": { "type": "string", "maxLength": 64 }
+      },
+      "required": ["id", "incident_id", "resource_id", "status", "dispatched_at"]
+    },
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Authenticated user profile for emergency operators and field personnel",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "email": { "type": "string", "maxLength": 255 },
+        "name": { "type": "string", "maxLength": 128 },
+        "role": { "type": "string", "maxLength": 64 },
+        "agency": { "type": "string", "maxLength": 128 },
+        "badgeNumber": { "type": "string", "maxLength": 64 },
+        "updatedAt": { "type": "string", "maxLength": 64 }
+      },
+      "required": ["id", "email", "name", "role"]
+    }
+  },
+  "firestore": {
+    "/incidents/{incidentId}": {
+      "schema": { "$ref": "entities/Incident" },
+      "description": "Collection of emergency incident reports and AI triage data"
+    },
+    "/resources/{resourceId}": {
+      "schema": { "$ref": "entities/Resource" },
+      "description": "Collection of active emergency response resources and fleet units"
+    },
+    "/hospitals/{hospitalId}": {
+      "schema": { "$ref": "entities/Hospital" },
+      "description": "Collection of emergency care hospitals and trauma facilities"
+    },
+    "/dispatches/{dispatchId}": {
+      "schema": { "$ref": "entities/Dispatch" },
+      "description": "Collection of active and completed dispatch orders"
+    },
+    "/users/{userId}": {
+      "schema": { "$ref": "entities/UserProfile" },
+      "description": "User profile records for authenticated operators and responders"
+    }
+  }
+}

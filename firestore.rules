@@ -1,0 +1,66 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Default-deny catch-all rule
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Security Helper Functions
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    // Incidents Collection: Emergency reports can be created by citizens/sensors and read by all
+    match /incidents/{incidentId} {
+      allow read: if true;
+      allow create: if isValidId(incidentId) && incoming().title is string && incoming().title.size() <= 200;
+      allow update: if isSignedIn();
+      allow delete: if isSignedIn();
+    }
+
+    // Resources Collection: Emergency fleet status and telemetry
+    match /resources/{resourceId} {
+      allow read: if true;
+      allow create, update: if isSignedIn();
+      allow delete: if isSignedIn();
+    }
+
+    // Hospitals Collection: Trauma and emergency bed capacity
+    match /hospitals/{hospitalId} {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
+
+    // Dispatches Collection: Mission orders and route assignments
+    match /dispatches/{dispatchId} {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
+
+    // User Profiles Collection: Private user data & operator badges
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow list: if false;
+      allow create, update: if isOwner(userId);
+      allow delete: if isOwner(userId);
+    }
+  }
+}

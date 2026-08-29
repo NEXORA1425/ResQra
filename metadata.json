@@ -1,0 +1,10 @@
+{
+  "name": "ResQra",
+  "description": "AI-Powered Emergency Intelligence & Response Platform — Sense. Decide. Respond.",
+  "requestFramePermissions": [
+    "geolocation"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
